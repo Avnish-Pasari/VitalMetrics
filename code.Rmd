@@ -1,0 +1,725 @@
+---
+title: "Project Code"
+author: "Avnish Pasari"
+output: pdf_document
+---
+
+# Initial EDA from Part 1 of the Final Project
+# loading the libraries
+
+```{r}
+# Loading the required libraries
+library(tidyverse)
+library(latex2exp)
+library(gridExtra)
+library(broom)
+library(ggfortify)
+library(UsingR)
+library(scatterplot3d)
+library(xtable)
+library(car)
+library(Matrix)
+library(MPV)
+library(car)
+library(Matrix)
+library(MPV)
+library(glmnet)
+library(rms)
+library(MASS)
+library(gglasso)
+library(pls)
+library(psych)
+library(ggplot2)
+library(knitr)
+library(tidyverse)
+library(broom)
+```
+
+
+# Loading the data
+
+```{r, eval=TRUE}
+data.life.org <- read.csv("Life_Expectancy_Data.csv")
+```
+
+
+# Summary of the data (Gives us information on missing values)
+
+```{r}
+summary(data.life.org)
+
+# Cleaning up the data by removing the missing values for only the variables under consideration
+
+data.life <- data.life.org[,c("Life.expectancy", "Income.composition.of.resources", "Schooling", "Adult.Mortality", "BMI", "HIV.AIDS")]
+data.life <-   data.life[complete.cases(data.life),]
+
+# Checking correlation of our variables with life expectancy
+cor(data.life)
+```
+
+
+# Creating Density Histograms for each of the varibales under consideration
+
+We do this to inspect any skews in our data. Note that skews can also be seen from the QQ Plots
+
+```{r}
+
+LifeExpectancy.hist <- ggplot(data.life, aes(x=Life.expectancy)) + 
+ geom_histogram(aes(y=..density..), colour="black", fill="white")+
+ geom_density(alpha=.2, fill="#FF6666") + 
+   labs(title="Life Expectancy Density Histogram",x="Life Expectancy in age (years)", y = "Density")
+
+
+IncomeComposition.hist <- ggplot(data.life, aes(x=Income.composition.of.resources)) + 
+ geom_histogram(aes(y=..density..), colour="black", fill="white")+
+ geom_density(alpha=.2, fill="#FF6666") + 
+   labs(title="Income Composition Density Histogram",x="Income Composition (index from 0 to 1)", y = "Density")
+
+
+Schooling.hist <- ggplot(data.life, aes(x=Schooling)) + 
+ geom_histogram(aes(y=..density..), colour="black", fill="white")+
+ geom_density(alpha=.2, fill="#FF6666") + 
+   labs(title="Schooling Density Histogram",x="Schooling (in years)", y = "Density")
+
+
+AdultMortality.hist <- ggplot(data.life, aes(x=Adult.Mortality)) + 
+ geom_histogram(aes(y=..density..), colour="black", fill="white")+
+ geom_density(alpha=.2, fill="#FF6666") + 
+   labs(title="Adult Mortality Density Histogram",x="Adult mortality rates", y = "Density")
+
+
+BMI.hist <- ggplot(data.life, aes(x=BMI)) + 
+ geom_histogram(aes(y=..density..), colour="black", fill="white")+
+ geom_density(alpha=.2, fill="#FF6666") + 
+   labs(title="BMI Density Histogram",x="Body Mass Index", y = "Density")
+
+
+HIV.AIDS.hist <- ggplot(data.life, aes(x=HIV.AIDS)) + 
+ geom_histogram(aes(y=..density..), colour="black", fill="white")+
+ geom_density(alpha=.2, fill="#FF6666") + 
+   labs(title="HIV/AIDS Density Histogram",x="HIV deaths (per 1000 births)", y = "Density")
+
+
+
+```
+
+
+
+# Creating boxplots for each of the variables under consideration
+
+We do this to check for any outliers in our data i.e. with respect to the variables under consideration
+
+```{r}
+
+LifeExpectancy.boxplot <- ggplot(data.life, aes(x=Life.expectancy)) + 
+ geom_boxplot() + 
+   labs(title="Life Expectancy Boxplot",x="Life Expectancy in age (years)")
+
+
+
+IncomeComposition.boxplot <- ggplot(data.life, aes(x=Income.composition.of.resources)) + 
+  geom_boxplot() + 
+   labs(title="Income Composition Boxplot",x="Income Composition (index from 0 to 1)")
+
+
+Schooling.boxplot <- ggplot(data.life, aes(x=Schooling)) + 
+ geom_boxplot() + 
+   labs(title="Schooling Boxplot",x="Schooling (in years)")
+
+
+AdultMortality.boxplot <- ggplot(data.life, aes(x=Adult.Mortality)) + 
+ geom_boxplot() + 
+   labs(title="Adult Mortality Boxplot",x="Adult mortality rates")
+
+
+BMI.boxplot <- ggplot(data.life, aes(x=BMI)) + 
+ geom_boxplot() + 
+   labs(title="BMI Boxplot",x="Body Mass Index")
+
+
+HIV.AIDS.boxplot <- ggplot(data.life, aes(x=HIV.AIDS)) + 
+ geom_boxplot() + 
+   labs(title="HIV/AIDS Boxplot",x="HIV deaths (per 1000 births)")
+
+
+```
+
+
+# Scartter Plot
+
+We do this to check for linearity of our data
+
+```{r}
+
+
+IncomeComposition.scatter <- ggplot(data.life) +
+  geom_point(aes(x = Income.composition.of.resources, y = Life.expectancy, group = 1))+
+  labs(x="Income Composition", y="Life Expectancy", title="Income Composition Scatter Plot")+
+  theme_classic()
+
+
+Schooling.scatter <- ggplot(data.life) +
+  geom_point(aes(x = Schooling, y = Life.expectancy, group = 1))+
+  labs(x="Schooling", y="Life Expectancy", title="Schooling Scatter Plot")+
+  theme_classic()
+
+AdultMortality.scatter <- ggplot(data.life) +
+  geom_point(aes(x = Adult.Mortality, y = Life.expectancy, group = 1))+
+  labs(x="Adult Mortality", y="Life Expectancy", title="Adult Mortality Scatter Plot")+
+  theme_classic()
+
+BMI.scatter <- ggplot(data.life) +
+  geom_point(aes(x = BMI, y = Life.expectancy, group = 1))+
+  labs(x="BMI", y="Life Expectancy", title="BMI Scatter Plot")+
+  theme_classic()
+
+HIV.AIDS.scatter <- ggplot(data.life) +
+  geom_point(aes(x = HIV.AIDS, y = Life.expectancy, group = 1))+
+  labs(x="HIV/AIDS", y="Life Expectancy", title="HIV/AIDS Scatter Plot")+
+  theme_classic()
+
+
+
+
+```
+
+
+# Checking our assumptions for simple linear regression
+# Plotting QQ-plots and Residual plots to check our assumptions
+
+Below we are creating the QQ plots for our variables. Note: We can also use our QQ Plot to see if there are any skews in our data.
+
+```{r}
+
+IncomeComposition.qqplot <- data.life %>%
+  ggplot(aes(sample = Income.composition.of.resources)) + 
+  geom_qq() +
+  geom_qq_line() +
+  labs(x = "N(0, 1) Quantiles",
+       y = "Income Composition Quantiles", 
+       title = "Normal QQ-Plot",
+       subtitle = "Data: Income Composition data points")
+
+Schooling.qqplot <- data.life %>%
+  ggplot(aes(sample = Schooling)) + 
+  geom_qq() +
+  geom_qq_line() +
+  labs(x = "N(0, 1) Quantiles",
+       y = "Schooling Quantiles", 
+       title = "Normal QQ-Plot",
+       subtitle = "Data: Schooling data points")
+
+AdultMortality.qqplot <- data.life %>%
+  ggplot(aes(sample = Adult.Mortality)) + 
+  geom_qq() +
+  geom_qq_line() +
+  labs(x = "N(0, 1) Quantiles",
+       y = "Adult Mortality Quantiles", 
+       title = "Normal QQ-Plot",
+       subtitle = "Data: Adult Mortality data points")
+
+BMI.qqplot <- data.life %>%
+  ggplot(aes(sample = BMI)) + 
+  geom_qq() +
+  geom_qq_line() +
+  labs(x = "N(0, 1) Quantiles",
+       y = "BMI Quantiles", 
+       title = "Normal QQ-Plot",
+       subtitle = "Data: BMI data points")
+
+HIV.AIDS.qqplot <- data.life %>%
+  ggplot(aes(sample = HIV.AIDS)) + 
+  geom_qq() +
+  geom_qq_line() +
+  labs(x = "N(0, 1) Quantiles",
+       y = "HIV/AIDS Quantiles", 
+       title = "Normal QQ-Plot",
+       subtitle = "Data: HIV/AIDS data points")
+
+
+
+```
+
+
+# Creating the required models for Residual plots
+
+```{r}
+
+IncomeComposition.model <- lm(Life.expectancy ~ Income.composition.of.resources, data = data.life)
+  
+Schooling.model <- lm(Life.expectancy ~ Schooling, data = data.life)
+
+AdultMortality.model <- lm(Life.expectancy ~ Adult.Mortality, data = data.life)
+  
+BMI.model <- lm(Life.expectancy ~ BMI, data = data.life)
+  
+HIV.AIDS.model <- lm(Life.expectancy ~ HIV.AIDS, data = data.life)
+
+```
+
+# Creating the residual plots below for all our variables under consideration
+
+```{r}
+
+IncomeComposition.residual <- qplot(x=fitted.values((IncomeComposition.model)), y=residuals(IncomeComposition.model), 
+                                    xlab = "Fitted Income Composition Values", ylab = "Error values") +   
+                                    geom_smooth(formula = y ~ x, method = "lm", se=F) + 
+      ggtitle("Residual plot between Life Expectancy and Income Composition")
+
+
+Schooling.residual <- qplot(x=fitted.values((Schooling.model)), y=residuals(Schooling.model), 
+                                    xlab = "Fitted Schooling Values", ylab = "Error values") +   
+                                    geom_smooth(formula = y ~ x, method = "lm", se=F) + 
+      ggtitle("Residual plot between Life Expectancy and Schooling")
+
+
+AdultMortality.residual <- qplot(x=fitted.values((AdultMortality.model)), y=residuals(AdultMortality.model), 
+                                    xlab = "Fitted Adult Mortality Values", ylab = "Error values") +   
+                                    geom_smooth(formula = y ~ x, method = "lm", se=F) + 
+      ggtitle("Residual plot between Life Expectancy and Adult Mortality")
+
+
+BMI.residual <- qplot(x=fitted.values((BMI.model)), y=residuals(BMI.model), 
+                                    xlab = "Fitted Body Mass Index Values", ylab = "Error values") +   
+                                    geom_smooth(formula = y ~ x, method = "lm", se=F) + 
+      ggtitle("Residual plot between Life Expectancy and Body Mass Index (BMI)")
+
+
+HIV.AIDS.residual <- qplot(x=fitted.values((HIV.AIDS.model)), y=residuals(HIV.AIDS.model), 
+                                    xlab = "Fitted HIV/AIDS Values", ylab = "Error values") +   
+                                    geom_smooth(formula = y ~ x, method = "lm", se=F) + 
+      ggtitle("Residual plot between Life Expectancy and HIV/AIDS")
+```
+
+
+# Below we are performing the first part of our EDA analysis by combining the density histograms, boxplots, and scatter plots of each of the variables and then analyzing each of them.
+
+```{r}
+
+grid.arrange(LifeExpectancy.boxplot, IncomeComposition.boxplot, Schooling.boxplot, nrow=3, ncol=1)
+
+grid.arrange(AdultMortality.boxplot, BMI.boxplot, HIV.AIDS.boxplot, nrow=3, ncol=1)
+
+grid.arrange(IncomeComposition.scatter, Schooling.scatter, nrow=1, ncol=2)
+
+grid.arrange(grobs = list(AdultMortality.scatter, BMI.scatter), norw=1, ncol=2)
+
+HIV.AIDS.scatter
+
+grid.arrange(IncomeComposition.qqplot, IncomeComposition.residual, nrow=2, ncol=1)
+
+grid.arrange(Schooling.qqplot, Schooling.residual, nrow=2, ncol=1)
+
+grid.arrange(AdultMortality.qqplot, AdultMortality.residual, nrow=2, ncol=1)
+
+grid.arrange(BMI.qqplot, BMI.residual, nrow=2, ncol=1)
+
+grid.arrange(HIV.AIDS.qqplot, HIV.AIDS.residual, nrow=2, ncol=1)
+
+
+
+```
+
+
+
+
+
+# Additional analysis for Final Project Part 3
+
+# Creating an MLR model and checking for multicollinearity
+
+```{r}
+## Multiple linear regression##
+# Creating an MLR model
+
+model <- lm(Life.expectancy ~ Income.composition.of.resources + Schooling + Adult.Mortality + BMI + HIV.AIDS, data = data.life)
+
+
+# Checking for multicollinearity using the Variance Inflation Factor (VIF)
+
+Xmat<- model.matrix(model)
+## Calculate the rank and trace of the matrix XTX
+XTX <- solve(t(Xmat)%*%Xmat)
+rankMatrix(XTX)
+H <- Xmat%*%XTX%*%t(Xmat)
+rankMatrix(H)
+summary(model)
+
+# Checking for multicollinearity using the Variance Inflation Factor (VIF)
+vif(model)  ## The vif function is from the car package
+
+# From the values we see that there is no significant multicollinearity amongst the 
+# chosen predictors
+
+```
+
+# Checking if the the model Assumptions have been violated or not
+# If model assumptions have been violated, we apply the correct remidial transformations to
+# correct the violations (example - using Variance Stabilizing Transformations or Box-Cox Transformation)
+
+```{r}
+
+resid <- rstudent(model)
+fitted <- predict(model)
+
+par(family = 'serif', mfrow = c(1,2))
+qqnorm(resid, sub="Fig 1.a: Normal QQ Plot of original data")
+#qqline(resid)
+plot(resid ~ fitted, type = "p", sub="Fig 1.b: Residual vs Fitted Plot of original data", main="Residual vs Fitted", xlab = "Fitted Values", 
+     ylab = "Standardized Residual", cex.lab = 1.2,
+     col = "red")
+lines(lowess(fitted, resid), col = "blue")
+#abline(lm(resid ~ fitted), lwd = 2, col = "blue")
+
+
+# Plotting Response vs Fitted values ##
+
+par(family = 'serif')
+plot(data.life$Life.expectancy ~ fitted, sub="Fig 1.c: Scatter Plot of Original Data",main="Scatter Plot", type = "p", xlab = "Fitted Values", 
+     ylab = "Life Expectancy", cex.lab = 1.2,
+     col = "red")
+abline(lm(data.life$Life.expectancy ~ fitted), lwd = 2, col = "blue")
+lines(lowess(fitted, data.life$Life.expectancy), col = "red")
+
+
+# Since the Normaility seems a bit uneven, we apply a Box Cox transformation
+
+## Box Cox Transformation ##
+
+boxcox(model)
+
+model.new <- lm(I((Life.expectancy)^2) ~ Income.composition.of.resources + Schooling + Adult.Mortality + BMI + HIV.AIDS, data = data.life)
+summary(model)
+
+r.new <- rstudent(model.new)
+fitted.new <- predict(model.new)
+
+
+par(family = 'serif', mfrow = c(1,2))
+qqnorm(r.new)
+#qqline(r.new)
+abline(a = 0, b = 1)
+plot(r.new ~ fitted.new, type = "p", xlab = "Fitted Values", 
+     ylab = "Standardized Residual", cex.lab = 1.2,
+     col = "red")
+lines(lowess(fitted.new, r.new), col = "blue")
+
+# Checking for multicollinearity in the new model
+
+vif(model.new)
+
+```
+
+
+# Next we check for any influential points such as leverage points or outliers
+# We make use of Cook's Distance, DFFITS and DFBETAS
+
+```{r}
+
+## The hat values ###
+h <- hatvalues(model.new)
+thresh <- 2 * (dim(model.matrix(model.new))[2])/nrow(data.life)
+w <- which(h > thresh)
+w
+
+### The Influential Observations ####
+D <- cooks.distance(model.new)
+which(D > qf(0.5, 5, 2736-6))
+
+## DFFITS ##
+dfits <- dffits(model.new)
+which(abs(dfits) > 2*sqrt(6/2736))
+
+## DFBETAS ##
+dfb <- dfbetas(model.new)
+which(abs(dfb[,2]) > 2/sqrt(2736))
+
+# Combining the two vectors
+
+reduce1 <- c(which(abs(dfits) > 2*sqrt(6/2736)), which(abs(dfb[,2]) > 2/sqrt(2736)))
+
+data.life1 <- data.life[-reduce1,]
+
+# Since we have removed the influential points, we must refit the model and check the residual vs fitted plot again
+# for any model violations
+
+model2 <- lm(Life.expectancy ~ Income.composition.of.resources + Schooling + Adult.Mortality + BMI + HIV.AIDS, data = data.life1)
+
+resid <- rstudent(model2)
+fitted <- predict(model2)
+
+par(family = 'serif', mfrow = c(1,2))
+qqnorm(resid, sub="Fig 2.a: Normal QQ-Plot (without influential obs)")
+#qqline(resid)
+plot(resid ~ fitted, main="Residual vs Fitted Values", type = "p", sub="Fig 2.b: Residual vs Fitted Plot (without influential obs)", xlab = "Fitted Values", 
+     ylab = "Standardized Residual", cex.lab = 1.2,
+     col = "red")
+lines(lowess(fitted, resid), col = "blue")
+#abline(lm(resid ~ fitted), lwd = 2, col = "blue")
+
+
+# Plotting Response vs Fitted values ##
+
+par(family = 'serif')
+plot(data.life1$Life.expectancy ~ fitted, main="Scatterplot", sub="Fig 2.c: Scatter Plot (without influential obs)", type = "p", xlab = "Fitted Values", 
+     ylab = "Life Expectancy", cex.lab = 1.2,
+     col = "red")
+abline(lm(data.life1$Life.expectancy ~ fitted), lwd = 2, col = "blue")
+lines(lowess(fitted, data.life1$Life.expectancy), col = "red")
+
+# There do not appear to be any model violations
+```
+
+
+# Having checked the model assumptions and accounting for influential points, we can
+# now move on towards variable selection (also known as Model Selection).
+
+The AIC based step wise selection
+```{r}
+
+sel.var.aic <- step(model2, trace = 0, k = 2, direction = "both") 
+select_var_aic<-attr(terms(sel.var.aic), "term.labels")   
+select_var_aic
+
+```
+
+The BIC based step wise selection
+```{r}
+
+sel.var.bic <- step(model2, trace = 0, k = log(nrow(data.life1)), direction = "both") 
+select_var_bic<-attr(terms(sel.var.bic), "term.labels")   
+select_var_bic
+
+
+```
+
+# Checking ANOVA on our model with all the predictor variables since both AIC and BIC
+# based stepwise selection yeilded the same result
+
+```{r}
+
+
+anova(model2) %>%
+  tidy() %>% # makes mod into a tidy dataframe
+  kable(caption = "Fig 3: The summary of ANOVA for the Multiple linear regression model")
+
+summary(model2)
+
+
+
+```
+
+
+
+
+
+
+
+# After our variable selection, we move on towards model validation
+
+```{r}
+
+### Cross Validation and prediction performance of AIC based selection ###
+# using package rms
+# using ordinary least square (ols) instead of the lm command
+
+ols.aic <- ols(Life.expectancy ~ ., data = data.life1, 
+               x=T, y=T, model = T)
+
+## 10 fold cross validation ##    
+# B = 10 means you want cross validation with 1/B=10 th of your data.
+aic.cross <- calibrate(ols.aic, method = "crossvalidation", B = 10)
+
+## Calibration plot ##
+plot(aic.cross, las = 1, xlab = "Predicted Life Expectancy", main = "Cross-Validation calibration with AIC")
+
+
+## Test Error ##
+pred.aic <- predict(ols.aic, newdata = data.life1)
+## Prediction error ##
+pred.error.AIC <- mean((data.life1$Life.expectancy - pred.aic)^2)
+
+
+
+
+### Cross Validation and prediction performance of BIC based selection ###
+ols.bic <- ols(Life.expectancy ~ ., data = data.life1, 
+               x=T, y=T, model = T)
+
+## 10 fold cross validation ##    
+bic.cross <- calibrate(ols.bic, method = "crossvalidation", B = 10)
+## Calibration plot ##
+plot(bic.cross, las = 1, xlab = "Predicted Life Expectancy", main = "Cross-Validation calibration with BIC")
+
+
+## Test Error ##
+pred.bic <- predict(ols.bic, newdata = data.life1)
+## Prediction error ##
+pred.error.BIC <- mean((data.life1$Life.expectancy - pred.bic)^2)
+
+```
+
+
+# After our model validation, we move towards finding LS Estimates and their Confidence Intervals
+# We find and plot the Confidence Interval for the mean Response, Prediction Interval for the actual 
+# response, estimating coefficients of confidence interval and testing coefficients and the mean
+# response.
+
+```{r}
+# If you only want to extract the coefficients then it can be done with the \texttt{coef} command. The 95% confidence intervals and the error variance can also be easily calculated using the \texttt{confint} command and the \texttt{summary} command respectively, as following,
+
+## Coefficients ## Extract Coefficients
+coef(model2) %>%
+  tidy() %>% # makes mod into a tidy dataframe
+  kable(caption = "Fig 5.a: The Coefficients of the model")
+
+## The 95% Confidence interval ## Extract 95% Confidence Interval
+confint(model2, level = 0.95) %>% # makes mod into a tidy dataframe
+  kable(caption = "Fig 5.b: The 95% Confidence Intervals of the Coefficients")
+## Error Variance ##
+mod2.summary <- summary(model2)
+mod2.summary$sigma^2
+
+
+
+# Prediction and Confidence Intervals
+
+# First you need to sort the data. Otherwise the plot can look messy ##
+data1 <- data.life1[order(data.life1$Income.composition.of.resources),]
+		
+		
+yhat1 <- predict(model2, newdata = data1, 
+		type = "response", interval = "none")
+		
+conf.inter1 <- predict(model2, newdata = data1, 
+		type = "response", interval = "confidence", level = 0.95)
+		
+pred.inter1 <- predict(model2, newdata = data1, 
+		type = "response", interval = "prediction", level = 0.95)
+
+### Combine the data with prediction intervals ###
+data.life.new1 <- cbind(data1, pred.inter1)
+p <- ggplot(data.life.new1, aes(x=Income.composition.of.resources, y=Life.expectancy)) + geom_point(col = 'black')
+			p + scale_color_brewer(palette="Dark2") + theme_minimal() +
+  geom_smooth(method=lm, se=T, col = "blue") + 
+			  geom_line(aes(y=lwr), color = "red", linetype = "dashed")+
+    geom_line(aes(y=upr), color = "red", linetype = "dashed")+
+			  ggtitle("Life Expectancy vs Income Composition") +
+			  xlab("Index (between 0.0 to 1.0)") + ylab("Time (in Years)") 
+			
+			
+			
+
+			
+			
+# First you need to sort the data. Otherwise the plot can look messy ##
+data2 <- data.life1[order(data.life1$Schooling),]
+		
+		
+yhat2 <- predict(model2, newdata = data2, 
+		type = "response", interval = "none")
+		
+conf.inter2 <- predict(model2, newdata = data2, 
+		type = "response", interval = "confidence", level = 0.95)
+		
+pred.inter2 <- predict(model2, newdata = data2, 
+		type = "response", interval = "prediction", level = 0.95)
+
+### Combine the data with prediction intervals ###
+data.life.new2 <- cbind(data2, pred.inter2)
+p <- ggplot(data.life.new2, aes(x=Schooling, y=Life.expectancy)) + geom_point(col = 'black')
+			p + scale_color_brewer(palette="Dark2") + theme_minimal() +
+  geom_smooth(method=lm, se=T, col = "blue") + 
+			  geom_line(aes(y=lwr), color = "red", linetype = "dashed")+
+    geom_line(aes(y=upr), color = "red", linetype = "dashed")+
+			  ggtitle("Life Expectancy vs Schooling") +
+			  xlab("Time (in Years)") + ylab("Time (in Years)") 
+			
+			
+			
+		
+			
+# First you need to sort the data. Otherwise the plot can look messy ##
+data3 <- data.life1[order(data.life1$Adult.Mortality),]
+		
+		
+yhat3 <- predict(model2, newdata = data3, 
+		type = "response", interval = "none")
+		
+conf.inter3 <- predict(model2, newdata = data3, 
+		type = "response", interval = "confidence", level = 0.95)
+		
+pred.inter3 <- predict(model2, newdata = data3, 
+		type = "response", interval = "prediction", level = 0.95)
+
+### Combine the data with prediction intervals ###
+data.life.new3 <- cbind(data3, pred.inter3)
+p <- ggplot(data.life.new3, aes(x=Adult.Mortality, y=Life.expectancy)) + geom_point(col = 'black')
+			p + scale_color_brewer(palette="Dark2") + theme_minimal() +
+  geom_smooth(method=lm, se=T, col = "blue") + 
+			  geom_line(aes(y=lwr), color = "red", linetype = "dashed")+
+    geom_line(aes(y=upr), color = "red", linetype = "dashed")+
+			  ggtitle("Life Expectancy vs Adult Mortality") +
+			  xlab("Probability per 1000 population") + ylab("Time (in Years)") 
+			
+			
+			
+
+			
+# First you need to sort the data. Otherwise the plot can look messy ##
+data4 <- data.life1[order(data.life1$BMI),]
+		
+		
+yhat4 <- predict(model2, newdata = data4, 
+		type = "response", interval = "none")
+		
+conf.inter4 <- predict(model2, newdata = data4, 
+		type = "response", interval = "confidence", level = 0.95)
+		
+pred.inter4 <- predict(model2, newdata = data4, 
+		type = "response", interval = "prediction", level = 0.95)
+
+### Combine the data with prediction intervals ###
+data.life.new4 <- cbind(data4, pred.inter4)
+p <- ggplot(data.life.new4, aes(x=BMI, y=Life.expectancy)) + geom_point(col = 'black')
+			p + scale_color_brewer(palette="Dark2") + theme_minimal() +
+  geom_smooth(method=lm, se=T, col = "blue") + 
+			  geom_line(aes(y=lwr), color = "red", linetype = "dashed")+
+    geom_line(aes(y=upr), color = "red", linetype = "dashed")+
+			  ggtitle("Life Expectancy vs BMI") +
+			  xlab("Average Body Mass Index") + ylab("Time (in Years)") 
+			
+			
+			
+			
+# First you need to sort the data. Otherwise the plot can look messy ##
+data5 <- data.life1[order(data.life1$HIV.AIDS),]
+		
+		
+yhat5 <- predict(model2, newdata = data5, 
+		type = "response", interval = "none")
+		
+conf.inter5 <- predict(model2, newdata = data5, 
+		type = "response", interval = "confidence", level = 0.95)
+		
+pred.inter5 <- predict(model2, newdata = data5, 
+		type = "response", interval = "prediction", level = 0.95)
+
+### Combine the data with prediction intervals ###
+data.life.new5 <- cbind(data5, pred.inter5)
+p <- ggplot(data.life.new5, aes(x=HIV.AIDS, y=Life.expectancy)) + geom_point(col = 'black')
+			p + scale_color_brewer(palette="Dark2") + theme_minimal() +
+  geom_smooth(method=lm, se=T, col = "blue") + 
+			  geom_line(aes(y=lwr), color = "red", linetype = "dashed")+
+    geom_line(aes(y=upr), color = "red", linetype = "dashed")+
+			  ggtitle("Life Expectancy vs HIV/AIDS") +
+			  xlab("Deaths per 1000 births") + ylab("Time (in Years)") 
+			
+			
+			
+			
+			
+
+			
+```
+
